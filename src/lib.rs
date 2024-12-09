@@ -29,6 +29,8 @@ pub struct Token<T> {
     start: usize,
     /// The end of the match
     end: usize,
+    /// String representation of the match
+    s: String,
 }
 
 impl<T> Token<T> {
@@ -42,6 +44,10 @@ impl<T> Token<T> {
 
     pub fn end(&self) -> usize {
         self.end
+    }
+
+    pub fn to_string(&self) -> &String {
+        &self.s
     }
 }
 
@@ -74,6 +80,7 @@ impl<T> Lexer<T> {
                 let mut is_matched = false;
                 let start = match_item.start();
                 let end = match_item.end();
+                let s = match_item.as_str().to_string();
                 for i in start..end {
                     if matched[i] {
                         is_matched = true;
@@ -86,6 +93,7 @@ impl<T> Lexer<T> {
                             toktype,
                             start,
                             end,
+                            s,
                         });
                     }
                 }
@@ -114,17 +122,29 @@ mod tests {
     fn basic_lex_test() {
         let mut lexer = Lexer::new();
 
+        // lex operators
         lexer.rule(r"\+", |_| Some(TokType::Add));
         lexer.rule(r"-", |_| Some(TokType::Sub));
         lexer.rule(r"\*", |_| Some(TokType::Mul));
         lexer.rule(r"/", |_| Some(TokType::Div));
+
+        // lex integers
         lexer.rule(r"[0-9]+", |match_item| {
             Some(TokType::Number(match_item.as_str().parse().unwrap()))
         });
 
-        let tokens = lexer.lex("5 + 10");
+        // ignore whitespace
+        lexer.rule("[ \t\n]", |_| None);
+
+        let tokens = lexer.lex("5 + 10 - 4 / 2 * 2");
         assert_eq!(tokens[0].toktype(), &TokType::Number(5));
         assert_eq!(tokens[1].toktype(), &TokType::Add);
         assert_eq!(tokens[2].toktype(), &TokType::Number(10));
+        assert_eq!(tokens[3].toktype(), &TokType::Sub);
+        assert_eq!(tokens[4].toktype(), &TokType::Number(4));
+        assert_eq!(tokens[5].toktype(), &TokType::Div);
+        assert_eq!(tokens[6].toktype(), &TokType::Number(2));
+        assert_eq!(tokens[7].toktype(), &TokType::Mul);
+        assert_eq!(tokens[8].toktype(), &TokType::Number(2));
     }
 }
