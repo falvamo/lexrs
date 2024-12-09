@@ -30,7 +30,7 @@ pub struct Token<T> {
     /// The end of the match
     end: usize,
     /// String representation of the match
-    s: String,
+    string: String,
 }
 
 impl<T> Token<T> {
@@ -46,8 +46,8 @@ impl<T> Token<T> {
         self.end
     }
 
-    pub fn to_string(&self) -> &String {
-        &self.s
+    pub fn string(&self) -> &String {
+        &self.string
     }
 }
 
@@ -80,7 +80,7 @@ impl<T> Lexer<T> {
                 let mut is_matched = false;
                 let start = match_item.start();
                 let end = match_item.end();
-                let s = match_item.as_str().to_string();
+                let string = match_item.as_str().to_string();
                 for i in start..end {
                     if matched[i] {
                         is_matched = true;
@@ -93,7 +93,7 @@ impl<T> Lexer<T> {
                             toktype,
                             start,
                             end,
-                            s,
+                            string,
                         });
                     }
                 }
